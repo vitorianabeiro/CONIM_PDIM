@@ -8,6 +8,7 @@ Repositório criado para armazenar os códigos desenvolvidos para o projeto CONI
 - Servidor: Tomcat 9.0
 - Mysql Ver 8.4.4
 - Path organizado.
+- Flutter 3.38.1
 
 # Configurações no projeto
 - Pom.xhtml na aba outputDirectory, permite definir para onde o .war do projero irá.
