@@ -4,9 +4,6 @@ import 'package:http/http.dart' as http;
 class ImovelApi {
   final String baseUrl = "http://localhost:8080/ContractImovel/api"; 
 
-  // ------------------------------
-  // LISTAR TODOS
-  // ------------------------------
   Future<List<dynamic>> listar() async {
     final url = Uri.parse("$baseUrl/imoveis");
     final response = await http.get(url);
@@ -18,9 +15,6 @@ class ImovelApi {
     }
   }
 
-  // ------------------------------
-  // LISTAR DISPONÍVEIS
-  // ------------------------------
   Future<List<dynamic>> listarDisponiveis() async {
     final url = Uri.parse("$baseUrl/imoveis/disponiveis");
     final response = await http.get(url);
@@ -32,9 +26,6 @@ class ImovelApi {
     }
   }
 
-  // ------------------------------
-  // BUSCAR POR ID
-  // ------------------------------
   Future<Map<String, dynamic>> buscar({required int id}) async {
     final url = Uri.parse("$baseUrl/imoveis/$id");
     final response = await http.get(url);
@@ -46,9 +37,6 @@ class ImovelApi {
     }
   }
 
-  // ------------------------------
-  // INSERIR
-  // ------------------------------
   Future<Map<String, dynamic>> inserir(Map<String, dynamic> imovel) async {
     final url = Uri.parse("$baseUrl/imoveis");
     final response = await http.post(
@@ -64,9 +52,6 @@ class ImovelApi {
     }
   }
 
-  // ------------------------------
-  // ATUALIZAR
-  // ------------------------------
   Future<Map<String, dynamic>> atualizar(int id, Map<String, dynamic> imovel) async {
     final url = Uri.parse("$baseUrl/imoveis/$id");
     final response = await http.put(
@@ -82,9 +67,6 @@ class ImovelApi {
     }
   }
 
-  // ------------------------------
-  // REMOVER
-  // ------------------------------
   Future<void> remover(int id) async {
     final url = Uri.parse("$baseUrl/imoveis/$id");
     final response = await http.delete(url);

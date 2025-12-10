@@ -27,7 +27,6 @@ class _ImovelFormPageState extends State<ImovelFormPage> {
 
   late String status;
 
-  // Lista fixa de status baseada nos enums do back
   final List<String> statusOptions = [
     "ALUGADO",
     "COMPRADO",
@@ -55,9 +54,6 @@ class _ImovelFormPageState extends State<ImovelFormPage> {
     status = imovel?["statusImovel"] ?? "DISPONIVEL";
   }
 
-  // ------------------------------
-  // SALVAR OU ATUALIZAR
-  // ------------------------------
   void _salvar() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -77,14 +73,12 @@ class _ImovelFormPageState extends State<ImovelFormPage> {
 
     try {
       if (widget.imovel == null) {
-        // Cadastrar novo imóvel
         await api.inserir(imovelData);
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Imóvel cadastrado com sucesso")),
         );
       } else {
-        // Atualizar imóvel existente
         await api.atualizar((widget.imovel!["id"] as num).toInt(), imovelData);
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(

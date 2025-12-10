@@ -1,37 +1,37 @@
 import 'package:flutter/material.dart';
-import '../api/imovel_api.dart';
-import '../widgets/imovel_card.dart';
-import 'imovel_form_page.dart';
+import '../api/inquilino_api.dart';
+import '../widgets/inquilino_card.dart';
+import 'inquilino_form_page.dart';
 
-class ImoveisPage extends StatefulWidget {
-  const ImoveisPage({super.key});
+class InquilinosPage extends StatefulWidget {
+  const InquilinosPage({super.key});
 
   @override
-  State<ImoveisPage> createState() => _ImoveisPageState();
+  State<InquilinosPage> createState() => _InquilinosPageState();
 }
 
-class _ImoveisPageState extends State<ImoveisPage> {
-  final ImovelApi api = ImovelApi();
-  late Future<List<dynamic>> imoveisFuture;
+class _InquilinosPageState extends State<InquilinosPage> {
+  final InquilinoApi api = InquilinoApi();
+  late Future<List<dynamic>> inquilinosFuture;
 
   @override
   void initState() {
     super.initState();
-    carregarImoveis();
+    carregarInquilinos();
   }
 
-  void carregarImoveis() {
-    imoveisFuture = api.listar();
+  void carregarInquilinos() {
+    inquilinosFuture = api.listar();
   }
 
   Future<void> _refresh() async {
     setState(() {
-      carregarImoveis();
+      carregarInquilinos();
     });
-    await imoveisFuture;
+    await inquilinosFuture;
   }
 
-  Future<void> _openPropertyDialog([Map<String, dynamic>? imovel]) async {
+  Future<void> _openInquilinoDialog([Map<String, dynamic>? inquilino]) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -45,7 +45,7 @@ class _ImoveisPageState extends State<ImoveisPage> {
           ),
           child: SizedBox(
             height: MediaQuery.of(ctx).size.height * 0.85,
-            child: ImovelFormPage(imovel: imovel),
+            child: InquilinoFormPage(inquilino: inquilino),
           ),
         );
       },
@@ -53,29 +53,25 @@ class _ImoveisPageState extends State<ImoveisPage> {
 
     if (result == true && mounted) {
       setState(() {
-        carregarImoveis();
+        carregarInquilinos();
       });
     }
   }
 
-  void _mostrarDetalhes(Map<String, dynamic> imovel) {
+  void _mostrarDetalhes(Map<String, dynamic> inquilino) {
     showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("${imovel["cidade"]}, ${imovel["bairro"]}"),
+        title: Text(inquilino["nome"]),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Endereço: ${imovel["endereco"]}, ${imovel["numero"]}"),
+              Text("Documento: ${inquilino["documento"]}"),
               const SizedBox(height: 6),
-              Text("CEP: ${imovel["CEP"]}"),
-              Text("Quartos: ${imovel["quartos"]}"),
-              Text("Banheiros: ${imovel["banheiros"]}"),
-              Text("Área: ${imovel["area"]} m²"),
-              Text("Valor aluguel: R\$ ${imovel["valorAluguel"]}"),
-              Text("Status: ${imovel["statusImovel"]}"),
-              Text("Observações: ${imovel["observacoes"] ?? '-'}"),
+              Text("Email: ${inquilino["email"] ?? '-'}"),
+              Text("Telefone: ${inquilino["telefone"] ?? '-'}"),
+              Text("Renda: R\$ ${inquilino["rendaMensal"] ?? '0.00'}"),
             ],
           ),
         ),
@@ -83,14 +79,14 @@ class _ImoveisPageState extends State<ImoveisPage> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _openPropertyDialog(imovel);
+              _openInquilinoDialog(inquilino);
             },
             child: const Text("Editar"),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _excluirImovel(imovel);
+              _excluirInquilino(inquilino);
             },
             child: const Text("Excluir", style: TextStyle(color: Colors.red)),
           ),
@@ -103,30 +99,40 @@ class _ImoveisPageState extends State<ImoveisPage> {
     );
   }
 
-  Future<void> _excluirImovel(Map<String, dynamic> imovel) async {
+  Future<void> _excluirInquilino(Map<String, dynamic> inquilino) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Confirmar exclusão"),
-        content: const Text("Deseja realmente excluir este imóvel?"),
+        content: const Text("Deseja realmente excluir este inquilino?"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancelar")),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Excluir", style: TextStyle(color: Colors.red))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancelar"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Excluir", style: TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );
 
     if (confirm == true) {
       try {
-        await api.remover((imovel["id"] as num).toInt());
+        await api.remover((inquilino["id"] as num).toInt());
         if (!mounted) return;
         setState(() {
-          carregarImoveis();
+          carregarInquilinos();
         });
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Imóvel excluído com sucesso")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Inquilino excluído com sucesso")),
+        );
       } catch (e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erro ao excluir imóvel: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erro ao excluir inquilino: $e")),
+        );
       }
     }
   }
@@ -145,13 +151,15 @@ class _ImoveisPageState extends State<ImoveisPage> {
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: ElevatedButton.icon(
-              onPressed: () => _openPropertyDialog(),
+              onPressed: () => _openInquilinoDialog(),
               icon: const Icon(Icons.add),
-              label: const Text("Novo Imóvel"),
+              label: const Text("Novo Inquilino"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: Colors.green,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
           ),
@@ -161,7 +169,7 @@ class _ImoveisPageState extends State<ImoveisPage> {
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: FutureBuilder<List<dynamic>>(
-          future: imoveisFuture,
+          future: inquilinosFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const SizedBox(
@@ -171,10 +179,10 @@ class _ImoveisPageState extends State<ImoveisPage> {
             } else if (snapshot.hasError) {
               return Center(child: Text("Erro: ${snapshot.error}"));
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return ListView( 
+              return ListView(
                 children: const [
                   SizedBox(height: 80),
-                  Center(child: Text("Nenhum imóvel encontrado")),
+                  Center(child: Text("Nenhum inquilino encontrado")),
                 ],
               );
             }
@@ -182,10 +190,10 @@ class _ImoveisPageState extends State<ImoveisPage> {
             final data = snapshot.data!;
             return Padding(
               padding: const EdgeInsets.all(20),
-              child: PropertyList(
-                imoveis: data,
-                onTap: (imovel) => _mostrarDetalhes(imovel),
-                onEdit: (imovel) => _openPropertyDialog(imovel),
+              child: InquilinoList(
+                inquilinos: data,
+                onTap: (inquilino) => _mostrarDetalhes(inquilino),
+                onEdit: (inquilino) => _openInquilinoDialog(inquilino),
               ),
             );
           },
@@ -194,6 +202,7 @@ class _ImoveisPageState extends State<ImoveisPage> {
     );
   }
 }
+
 class _AppSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -202,7 +211,12 @@ class _AppSidebar extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const DrawerHeader(child: Text("CONIM", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+            const DrawerHeader(
+              child: Text(
+                "CONIM",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
             ListTile(
               leading: const Icon(Icons.home),
               title: const Text("Início"),
@@ -223,7 +237,10 @@ class _AppSidebar extends StatelessWidget {
             const Spacer(),
             Padding(
               padding: const EdgeInsets.all(12),
-              child: Text("Versão 1.0", style: TextStyle(color: Colors.grey.shade600)),
+              child: Text(
+                "Versão 1.0",
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
             ),
           ],
         ),
@@ -231,6 +248,7 @@ class _AppSidebar extends StatelessWidget {
     );
   }
 }
+
 class _PageHeaderTitle extends StatelessWidget {
   const _PageHeaderTitle();
 
@@ -239,21 +257,32 @@ class _PageHeaderTitle extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: const [
-        Text("Gestão de Imóveis", style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          "Gestão de Inquilinos",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         SizedBox(height: 2),
-        Text("Gerencie todos os imóveis do seu portfólio", style: TextStyle(color: Colors.black54, fontSize: 12)),
+        Text(
+          "Gerencie todos os inquilinos do sistema",
+          style: TextStyle(color: Colors.black54, fontSize: 12),
+        ),
       ],
     );
   }
 }
-class PropertyList extends StatelessWidget {
-  final List<dynamic> imoveis;
+
+class InquilinoList extends StatelessWidget {
+  final List<dynamic> inquilinos;
   final void Function(Map<String, dynamic>)? onTap;
   final void Function(Map<String, dynamic>)? onEdit;
 
-  const PropertyList({
+  const InquilinoList({
     super.key,
-    required this.imoveis,
+    required this.inquilinos,
     this.onTap,
     this.onEdit,
   });
@@ -267,27 +296,30 @@ class PropertyList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      final cols = _columnsForWidth(constraints.maxWidth);
-      return GridView.builder(
-        itemCount: imoveis.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: cols,
-          childAspectRatio: 0.9,
-          mainAxisSpacing: 20,
-          crossAxisSpacing: 20,
-        ),
-        itemBuilder: (_, index) {
-          final imovel = Map<String, dynamic>.from(imoveis[index] as Map);
-          return GestureDetector(
-            onTap: () => onTap?.call(imovel),
-            child: ImovelCard(
-              imovel: imovel,
-              onEdit: () => onEdit?.call(imovel),
-            ),
-          );
-        },
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cols = _columnsForWidth(constraints.maxWidth);
+        return GridView.builder(
+          itemCount: inquilinos.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: cols,
+            childAspectRatio: 0.9,
+            mainAxisSpacing: 20,
+            crossAxisSpacing: 20,
+          ),
+          itemBuilder: (_, index) {
+            final inquilino = Map<String, dynamic>.from(
+                inquilinos[index] as Map);
+            return GestureDetector(
+              onTap: () => onTap?.call(inquilino),
+              child: InquilinoCard(
+                inquilino: inquilino,
+                onEdit: () => onEdit?.call(inquilino),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }
